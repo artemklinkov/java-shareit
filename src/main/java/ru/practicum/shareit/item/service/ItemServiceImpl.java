@@ -92,6 +92,7 @@ public class ItemServiceImpl implements ItemService{
     public Optional<ItemDto> getById(Long id) {
         Item foundItem = itemRepository.getById(id)
                 .orElseThrow(() -> new NotFoundException("".formatted(id)));
+
         return Optional.of(toItemDto(foundItem));
     }
 
