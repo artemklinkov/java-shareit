@@ -49,4 +49,8 @@ public class ItemController {
         return itemService.search(text);
     }
 
+    @DeleteMapping(path = "/{id}")
+    public void delete(@PathVariable Long id) {
+        itemService.delete(id);
+    }
 }

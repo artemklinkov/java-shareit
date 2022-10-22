@@ -2,21 +2,23 @@ package ru.practicum.shareit.item.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import ru.practicum.shareit.exception.ConflictDataException;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
-import static ru.practicum.shareit.item.mapper.ItemMapper.*;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+
+import static ru.practicum.shareit.item.mapper.ItemMapper.toItem;
+import static ru.practicum.shareit.item.mapper.ItemMapper.toItemDto;
 
 @Service
-public class ItemServiceImpl implements ItemService{
+public class ItemServiceImpl implements ItemService {
 
     private final ItemRepository itemRepository;
     private final UserRepository userRepository;
@@ -35,7 +37,7 @@ public class ItemServiceImpl implements ItemService{
     @Override
     public ItemDto create(ItemDto item, Long userId) {
         User user = userRepository.getById(userId)
-                .orElseThrow(()-> new NotFoundException("Пользователь с id %s не найден".formatted(userId)));
+                .orElseThrow(() -> new NotFoundException(String.format("Пользователь с id %s не найден", userId)));
         item.setOwner(user);
         ItemDto createdItem = create(item);
         return createdItem;
@@ -49,11 +51,11 @@ public class ItemServiceImpl implements ItemService{
     @Override
     public ItemDto update(ItemDto item, Long id, Long userId) {
         User user = userRepository.getById(userId)
-                .orElseThrow(()-> new NotFoundException("Пользователь с id %s не найден".formatted(userId)));
+                .orElseThrow(() -> new NotFoundException(String.format("Пользователь с id %s не найден",userId)));
         Item updatedItem = itemRepository.getById(id)
-                .orElseThrow(() -> new NotFoundException("Вещь с id %s не найдена".formatted(id)));
+                .orElseThrow(() -> new NotFoundException(String.format("Вещь с id %s не найдена", id)));
         if (updatedItem.getOwner() != null && !updatedItem.getOwner().equals(user)) {
-            throw new NotFoundException("Вещь %s не принадлежит пользователю %s".formatted(id, userId));
+            throw new NotFoundException(String.format("Вещь %s не принадлежит пользователю %s",id, userId));
         }
 
         if (item.getName() != null) {
@@ -76,7 +78,8 @@ public class ItemServiceImpl implements ItemService{
 
     @Override
     public List<ItemDto> getAll() {
-        return itemRepository.getAll().stream().map(item -> toItemDto(item)).toList();
+        return itemRepository.getAll().stream().map(item -> toItemDto(item))
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -85,13 +88,13 @@ public class ItemServiceImpl implements ItemService{
                 .stream()
                 .filter(item -> item.getOwner().getId() == userId)
                 .map(item -> toItemDto(item))
-                .toList();
+                .collect(Collectors.toList());
     }
 
     @Override
     public Optional<ItemDto> getById(Long id) {
         Item foundItem = itemRepository.getById(id)
-                .orElseThrow(() -> new NotFoundException("".formatted(id)));
+                .orElseThrow(() -> new NotFoundException(String.format("Вещь с id %s не найдена.", id)));
 
         return Optional.of(toItemDto(foundItem));
     }
@@ -106,6 +109,6 @@ public class ItemServiceImpl implements ItemService{
                 .stream()
                 .filter(item -> item.getAvailable() && item.getDescription().toLowerCase().contains(text.toLowerCase()))
                 .map(item -> toItemDto(item))
-                .toList();
+                .collect(Collectors.toList());
     }
 }

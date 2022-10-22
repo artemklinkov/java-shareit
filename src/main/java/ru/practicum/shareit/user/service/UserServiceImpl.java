@@ -11,6 +11,7 @@ import ru.practicum.shareit.user.repository.UserRepository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static ru.practicum.shareit.user.mapper.UserMapper.toUserDto;
 
@@ -25,13 +26,14 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<UserDto> getAll() {
-        return userRepository.getAll().stream().map(user -> toUserDto(user)).toList();
+        return userRepository.getAll().stream().map(user -> toUserDto(user))
+                .collect(Collectors.toList());
     }
 
     @Override
     public Optional<UserDto> getById(Long id) {
         User user = userRepository.getById(id)
-                .orElseThrow(() -> new NotFoundException("Пользователь с id %s не найден".formatted(id)));
+                .orElseThrow(() -> new NotFoundException(String.format("Пользователь с id %s не найден", id)));
 
         return Optional.of(toUserDto(user));
     }
@@ -62,7 +64,8 @@ public class UserServiceImpl implements UserService {
         List<User> users = userRepository.getAll();
         users.forEach(checkedUser -> {
             if (checkedUser.getEmail().equals(user.getEmail())) {
-                throw new ConflictDataException("Пользователь с e-mail %s уже зарегистрирован".formatted(user.getEmail()));
+                throw new ConflictDataException(
+                        String.format("Пользователь с e-mail %s уже зарегистрирован", user.getEmail()));
             }
         });
     }

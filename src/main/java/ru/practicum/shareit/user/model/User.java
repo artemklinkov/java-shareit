@@ -1,5 +1,6 @@
 package ru.practicum.shareit.user.model;
 
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -11,6 +12,7 @@ import javax.validation.constraints.NotBlank;
  */
 @Setter
 @Getter
+@Builder
 public class User {
     private long id;
 

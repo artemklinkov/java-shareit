@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Component
 public class UserRepositoryImpl implements UserRepository {
@@ -43,7 +44,7 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Override
     public List<User> getAll() {
-        return users.values().stream().toList();
+        return users.values().stream().collect(Collectors.toList());
     }
 
     @Override
