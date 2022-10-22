@@ -15,7 +15,7 @@ import java.util.Optional;
 import static ru.practicum.shareit.user.mapper.UserMapper.toUserDto;
 
 @Service
-public class UserServiceImpl implements UserService{
+public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
 
     @Autowired

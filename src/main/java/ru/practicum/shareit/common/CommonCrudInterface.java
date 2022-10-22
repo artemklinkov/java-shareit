@@ -1,7 +1,5 @@
 package ru.practicum.shareit.common;
 
-import ru.practicum.shareit.user.dto.UserDto;
-
 import java.util.List;
 import java.util.Optional;
 
