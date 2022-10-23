@@ -1,5 +1,6 @@
 package ru.practicum.shareit.item.service;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exception.NotFoundException;
@@ -11,6 +12,7 @@ import ru.practicum.shareit.user.repository.UserRepository;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -54,19 +56,13 @@ public class ItemServiceImpl implements ItemService {
                 .orElseThrow(() -> new NotFoundException(String.format("Пользователь с id %s не найден",userId)));
         Item updatedItem = itemRepository.getById(id)
                 .orElseThrow(() -> new NotFoundException(String.format("Вещь с id %s не найдена", id)));
-        if (updatedItem.getOwner() != null && !updatedItem.getOwner().equals(user)) {
+        if (!Objects.equals(updatedItem.getOwner(), user)) {
             throw new NotFoundException(String.format("Вещь %s не принадлежит пользователю %s",id, userId));
         }
 
-        if (item.getName() != null) {
-            updatedItem.setName(item.getName());
-        }
-        if (item.getDescription() != null) {
-            updatedItem.setDescription(item.getDescription());
-        }
-        if (item.getAvailable() != null) {
-            updatedItem.setAvailable(item.getAvailable());
-        }
+        Optional.ofNullable(item.getName()).ifPresent(updatedItem::setName);
+        Optional.ofNullable(item.getDescription()).ifPresent(updatedItem::setDescription);
+        Optional.ofNullable(item.getAvailable()).ifPresent(updatedItem::setAvailable);
 
         return update(toItemDto(updatedItem), id);
     }
@@ -101,7 +97,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public List<ItemDto> search(String text) {
-        if (text.isBlank()) {
+        if (StringUtils.isBlank(text)) {
             return new ArrayList<>();
         }
 
