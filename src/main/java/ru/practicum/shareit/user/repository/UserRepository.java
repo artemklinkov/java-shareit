@@ -1,8 +1,8 @@
 package ru.practicum.shareit.user.repository;
 
-import ru.practicum.shareit.common.CommonCrudInterface;
+import org.springframework.data.jpa.repository.JpaRepository;
 import ru.practicum.shareit.user.model.User;
 
-public interface UserRepository extends CommonCrudInterface<User, User> {
+public interface UserRepository extends JpaRepository<User, Long> {
 
 }
