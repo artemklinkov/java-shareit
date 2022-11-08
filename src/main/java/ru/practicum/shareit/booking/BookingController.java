@@ -1,12 +1,9 @@
 package ru.practicum.shareit.booking;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingShortDto;
 import ru.practicum.shareit.booking.service.BookingService;
-import ru.practicum.shareit.exception.BadDataException;
-import ru.practicum.shareit.exception.ErrorResponse;
 
 import javax.validation.Valid;
 import java.util.List;
@@ -49,9 +46,4 @@ public class BookingController {
         return bookingService.getById(bookingId, userId);
     }
 
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleIncorrectParameterException(BadDataException e) {
-        return new ErrorResponse(e.getMessage());
-    }
 }

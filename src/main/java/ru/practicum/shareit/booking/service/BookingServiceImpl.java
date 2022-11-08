@@ -7,6 +7,7 @@ import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingShortDto;
 import ru.practicum.shareit.booking.mapper.BookingMapper;
 import ru.practicum.shareit.booking.model.Booking;
+import ru.practicum.shareit.booking.model.BookingState;
 import ru.practicum.shareit.booking.repository.BookingRepository;
 import ru.practicum.shareit.exception.BadDataException;
 import ru.practicum.shareit.exception.NotFoundException;
@@ -102,29 +103,33 @@ public class BookingServiceImpl implements BookingService {
                 .orElseThrow(() -> new NotFoundException("Невозможно найти бронирования - " +
                         "не существует пользователя с id " + userId));
         List<Booking> bookingDtoList = new ArrayList<>();
-        switch (state) {
-            case "ALL":
+        BookingState evaluateState;
+        try {
+            evaluateState = BookingState.valueOf(state);
+        } catch (IllegalArgumentException e) {
+            throw new BadDataException("Unknown state: UNSUPPORTED_STATUS");
+        }
+        switch (evaluateState) {
+            case ALL:
                 bookingDtoList.addAll(bookingRepository.findAllByItemOwner(user, sort));
                 break;
-            case "CURRENT":
+            case CURRENT:
                 bookingDtoList.addAll(bookingRepository.findAllByItemOwnerAndStartBeforeAndEndAfter(user,
                         LocalDateTime.now(), LocalDateTime.now(), sort));
                 break;
-            case "PAST":
+            case PAST:
                 bookingDtoList.addAll(bookingRepository.findAllByItemOwnerAndEndBefore(user,
                         LocalDateTime.now(), sort));
                 break;
-            case "FUTURE":
+            case FUTURE:
                 bookingDtoList.addAll(bookingRepository.findAllByItemOwnerAndStartAfter(user, LocalDateTime.now(), sort));
                 break;
-            case "WAITING":
+            case WAITING:
                 bookingDtoList.addAll(bookingRepository.findAllByItemOwnerAndStatusEquals(user, WAITING, sort));
                 break;
-            case "REJECTED":
+            case REJECTED:
                 bookingDtoList.addAll(bookingRepository.findAllByItemOwnerAndStatusEquals(user, REJECTED, sort));
                 break;
-            default:
-                throw new BadDataException("Unknown state: UNSUPPORTED_STATUS");
         }
 
         return bookingDtoList.stream().map(BookingMapper::toBookingDto).collect(Collectors.toList());
@@ -137,29 +142,33 @@ public class BookingServiceImpl implements BookingService {
                 .orElseThrow(() -> new NotFoundException("Невозможно найти бронирования - " +
                         "не найден пользователь с id " + userId));
         List<Booking> bookingDtoList = new ArrayList<>();
-        switch (state) {
-            case "ALL":
+        BookingState evaluateState;
+        try {
+            evaluateState = BookingState.valueOf(state);
+        } catch (IllegalArgumentException e) {
+            throw new BadDataException("Unknown state: UNSUPPORTED_STATUS");
+        }
+        switch (evaluateState) {
+            case ALL:
                 bookingDtoList.addAll(bookingRepository.findAllByBooker(user, sort));
                 break;
-            case "CURRENT":
+            case CURRENT:
                 bookingDtoList.addAll(bookingRepository.findAllByBookerAndStartBeforeAndEndAfter(user,
                         LocalDateTime.now(), LocalDateTime.now(), sort));
                 break;
-            case "PAST":
+            case PAST:
                 bookingDtoList.addAll(bookingRepository.findAllByBookerAndEndBefore(user,
                         LocalDateTime.now(), sort));
                 break;
-            case "FUTURE":
+            case FUTURE:
                 bookingDtoList.addAll(bookingRepository.findAllByBookerAndStartAfter(user, LocalDateTime.now(), sort));
                 break;
-            case "WAITING":
+            case WAITING:
                 bookingDtoList.addAll(bookingRepository.findAllByBookerAndStatusEquals(user, WAITING, sort));
                 break;
-            case "REJECTED":
+            case REJECTED:
                 bookingDtoList.addAll(bookingRepository.findAllByBookerAndStatusEquals(user, REJECTED, sort));
                 break;
-            default:
-                throw new BadDataException("Unknown state: UNSUPPORTED_STATUS");
         }
 
         return bookingDtoList.stream().map(BookingMapper::toBookingDto).collect(Collectors.toList());
