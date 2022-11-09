@@ -1,17 +1,24 @@
 package ru.practicum.shareit.item.service;
 
-import ru.practicum.shareit.common.CommonCrudInterface;
+import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 
 import java.util.List;
 
-public interface ItemService extends CommonCrudInterface<ItemDto, ItemDto> {
-    ItemDto create(ItemDto item, Long userId);
-
-    ItemDto update(ItemDto item, Long id, Long userId);
+public interface ItemService {
 
     List<ItemDto> getAll(Long userId);
 
+    ItemDto getById(Long id, Long userId);
+
+    ItemDto create(ItemDto itemDto, Long userId);
+
+    ItemDto update(ItemDto itemDto, Long id, Long userId);
+
+    void delete(Long id);
+
     List<ItemDto> search(String text);
+
+    CommentDto createComment(Long itemId, Long userId, CommentDto commentDto);
 
 }

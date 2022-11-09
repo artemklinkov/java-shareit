@@ -2,6 +2,7 @@ package ru.practicum.shareit.user.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.exception.BadDataException;
 import ru.practicum.shareit.exception.ConflictDataException;
 import ru.practicum.shareit.exception.NotFoundException;
@@ -13,6 +14,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static ru.practicum.shareit.user.mapper.UserMapper.toUser;
 import static ru.practicum.shareit.user.mapper.UserMapper.toUserDto;
 
 @Service
@@ -24,44 +26,53 @@ public class UserServiceImpl implements UserService {
         this.userRepository = userRepository;
     }
 
+    @Transactional(readOnly = true)
     @Override
     public List<UserDto> getAll() {
-        return userRepository.getAll().stream().map(user -> toUserDto(user))
+        return userRepository.findAll().stream().map(user -> toUserDto(user))
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     @Override
-    public Optional<UserDto> getById(Long id) {
-        User user = userRepository.getById(id)
+    public UserDto getById(Long id) {
+        User user = userRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException(String.format("Пользователь с id %s не найден", id)));
 
-        return Optional.of(toUserDto(user));
+        return toUserDto(user);
     }
 
+    @Transactional
     @Override
-    public UserDto create(User user) {
-        checkEmail(user, false);
+    public UserDto create(UserDto userDto) {
+        User user = toUser(userDto);
 
-        return toUserDto(userRepository.create(user));
+        return toUserDto(userRepository.save(user));
     }
 
+    @Transactional
     @Override
-    public UserDto update(User user, Long id) {
-        checkEmail(user, true);
+    public UserDto update(UserDto userDto, Long id) {
+        User updatedUser = userRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Невозможно обновить данные пользователя. " +
+                        "Не найден пользователь с id: " + id));
+        Optional.ofNullable(userDto.getEmail()).ifPresent(updatedUser::setEmail);
+        Optional.ofNullable(userDto.getName()).ifPresent(updatedUser::setName);
 
-        return toUserDto(userRepository.update(user, id));
+        return toUserDto(userRepository.save(updatedUser));
     }
 
+    @Transactional
     @Override
     public void delete(Long id) {
-        userRepository.delete(id);
+        userRepository.deleteById(id);
     }
 
     void checkEmail(User user, boolean isUpdate) {
         if (!isUpdate && user.getEmail() == null) {
             throw new BadDataException("Не указан email пользователя");
         }
-        List<User> users = userRepository.getAll();
+        List<User> users = userRepository.findAll();
         users.forEach(checkedUser -> {
             if (checkedUser.getEmail().equals(user.getEmail())) {
                 throw new ConflictDataException(
