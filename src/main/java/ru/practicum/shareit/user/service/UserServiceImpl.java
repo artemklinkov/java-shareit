@@ -45,6 +45,7 @@ public class UserServiceImpl implements UserService {
     @Transactional
     @Override
     public UserDto create(UserDto userDto) {
+        checkEmail(userDto, false);
         User user = toUser(userDto);
 
         return toUserDto(userRepository.save(user));
@@ -68,15 +69,15 @@ public class UserServiceImpl implements UserService {
         userRepository.deleteById(id);
     }
 
-    void checkEmail(User user, boolean isUpdate) {
-        if (!isUpdate && user.getEmail() == null) {
+    void checkEmail(UserDto userDto, boolean isUpdate) {
+        if (!isUpdate && userDto.getEmail() == null) {
             throw new BadDataException("Не указан email пользователя");
         }
         List<User> users = userRepository.findAll();
         users.forEach(checkedUser -> {
-            if (checkedUser.getEmail().equals(user.getEmail())) {
+            if (checkedUser.getEmail().equals(userDto.getEmail())) {
                 throw new ConflictDataException(
-                        String.format("Пользователь с e-mail %s уже зарегистрирован", user.getEmail()));
+                        String.format("Пользователь с e-mail %s уже зарегистрирован", userDto.getEmail()));
             }
         });
     }

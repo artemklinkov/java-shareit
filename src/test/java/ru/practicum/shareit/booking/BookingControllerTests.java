@@ -6,6 +6,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingShortDto;
+import ru.practicum.shareit.exception.BadDataException;
 import ru.practicum.shareit.item.ItemController;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.user.UserController;
@@ -14,6 +15,7 @@ import ru.practicum.shareit.user.dto.UserDto;
 import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static ru.practicum.shareit.booking.model.BookingStatus.APPROVED;
 import static ru.practicum.shareit.booking.model.BookingStatus.WAITING;
 
@@ -95,5 +97,19 @@ class BookingControllerTests {
         assertEquals(0, bookingController.getAllByOwner(user.getId(), "FUTURE", 0, 10).size());
         assertEquals(0, bookingController.getAllByOwner(user.getId(), "REJECTED", 0, 10).size());
         assertEquals(0, bookingController.getAllByOwner(user.getId(), "PAST", 0, 10).size());
+    }
+
+    @Test
+    void getAllByOwnerFailTest() {
+        UserDto user = userController.create(userDto);
+        assertThrows(BadDataException.class, () -> bookingController.getAllByOwner(user.getId(),
+                "UNKNOWN", 0, 1));
+    }
+
+    @Test
+    void getAllByUserFailTest() {
+        UserDto user = userController.create(userDto);
+        assertThrows(BadDataException.class, () -> bookingController.getAllByUser(user.getId(),
+                "UNKNOWN", 0, 1));
     }
 }

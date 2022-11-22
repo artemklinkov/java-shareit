@@ -74,7 +74,7 @@ public class UserControllerWithMockTest {
     }
 
     @Test
-    void createFailTest() throws Exception {
+    void createFailEmptyNameTest() throws Exception {
         when(userService.create(any()))
                 .thenReturn(userDto);
 
