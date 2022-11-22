@@ -1,5 +1,6 @@
 package ru.practicum.shareit.booking.service;
 
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -98,11 +99,12 @@ public class BookingServiceImpl implements BookingService {
 
     @Transactional(readOnly = true)
     @Override
-    public List<BookingDto> getAllByOwner(Long userId, String state) {
+    public List<BookingDto> getAllByOwner(Long userId, String state, int from, int size) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("Невозможно найти бронирования - " +
                         "не существует пользователя с id " + userId));
         List<Booking> bookingDtoList = new ArrayList<>();
+        PageRequest pageRequest = PageRequest.of(from / size, size, sort);
         BookingState evaluateState;
         try {
             evaluateState = BookingState.valueOf(state);
@@ -111,24 +113,28 @@ public class BookingServiceImpl implements BookingService {
         }
         switch (evaluateState) {
             case ALL:
-                bookingDtoList.addAll(bookingRepository.findAllByItemOwner(user, sort));
+                bookingDtoList.addAll(bookingRepository
+                        .findAllByItemOwner(user, pageRequest).toList());
                 break;
             case CURRENT:
                 bookingDtoList.addAll(bookingRepository.findAllByItemOwnerAndStartBeforeAndEndAfter(user,
-                        LocalDateTime.now(), LocalDateTime.now(), sort));
+                        LocalDateTime.now(), LocalDateTime.now(), pageRequest).toList());
                 break;
             case PAST:
                 bookingDtoList.addAll(bookingRepository.findAllByItemOwnerAndEndBefore(user,
-                        LocalDateTime.now(), sort));
+                        LocalDateTime.now(), pageRequest).toList());
                 break;
             case FUTURE:
-                bookingDtoList.addAll(bookingRepository.findAllByItemOwnerAndStartAfter(user, LocalDateTime.now(), sort));
+                bookingDtoList.addAll(bookingRepository
+                        .findAllByItemOwnerAndStartAfter(user, LocalDateTime.now(), pageRequest).toList());
                 break;
             case WAITING:
-                bookingDtoList.addAll(bookingRepository.findAllByItemOwnerAndStatusEquals(user, WAITING, sort));
+                bookingDtoList.addAll(bookingRepository
+                        .findAllByItemOwnerAndStatusEquals(user, WAITING, pageRequest).toList());
                 break;
             case REJECTED:
-                bookingDtoList.addAll(bookingRepository.findAllByItemOwnerAndStatusEquals(user, REJECTED, sort));
+                bookingDtoList.addAll(bookingRepository
+                        .findAllByItemOwnerAndStatusEquals(user, REJECTED, pageRequest).toList());
                 break;
         }
 
@@ -137,11 +143,12 @@ public class BookingServiceImpl implements BookingService {
 
     @Transactional(readOnly = true)
     @Override
-    public List<BookingDto> getAllByUser(Long userId, String state) {
+    public List<BookingDto> getAllByUser(Long userId, String state, int from, int size) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("Невозможно найти бронирования - " +
                         "не найден пользователь с id " + userId));
         List<Booking> bookingDtoList = new ArrayList<>();
+        PageRequest pageRequest = PageRequest.of(from / size, size, sort);
         BookingState evaluateState;
         try {
             evaluateState = BookingState.valueOf(state);
@@ -150,24 +157,27 @@ public class BookingServiceImpl implements BookingService {
         }
         switch (evaluateState) {
             case ALL:
-                bookingDtoList.addAll(bookingRepository.findAllByBooker(user, sort));
+                bookingDtoList.addAll(bookingRepository.findAllByBooker(user, pageRequest).toList());
                 break;
             case CURRENT:
                 bookingDtoList.addAll(bookingRepository.findAllByBookerAndStartBeforeAndEndAfter(user,
-                        LocalDateTime.now(), LocalDateTime.now(), sort));
+                        LocalDateTime.now(), LocalDateTime.now(), pageRequest).toList());
                 break;
             case PAST:
                 bookingDtoList.addAll(bookingRepository.findAllByBookerAndEndBefore(user,
-                        LocalDateTime.now(), sort));
+                        LocalDateTime.now(), pageRequest).toList());
                 break;
             case FUTURE:
-                bookingDtoList.addAll(bookingRepository.findAllByBookerAndStartAfter(user, LocalDateTime.now(), sort));
+                bookingDtoList.addAll(bookingRepository
+                        .findAllByBookerAndStartAfter(user, LocalDateTime.now(), pageRequest).toList());
                 break;
             case WAITING:
-                bookingDtoList.addAll(bookingRepository.findAllByBookerAndStatusEquals(user, WAITING, sort));
+                bookingDtoList.addAll(bookingRepository
+                        .findAllByBookerAndStatusEquals(user, WAITING, pageRequest).toList());
                 break;
             case REJECTED:
-                bookingDtoList.addAll(bookingRepository.findAllByBookerAndStatusEquals(user, REJECTED, sort));
+                bookingDtoList.addAll(bookingRepository
+                        .findAllByBookerAndStatusEquals(user, REJECTED, pageRequest).toList());
                 break;
         }
 

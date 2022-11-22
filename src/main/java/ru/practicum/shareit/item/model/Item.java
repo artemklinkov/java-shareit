@@ -40,5 +40,4 @@ public class Item {
     @JoinColumn(name = "request_id", referencedColumnName = "id")
     private ItemRequest request;
 
-
 }

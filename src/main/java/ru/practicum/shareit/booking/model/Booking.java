@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@EqualsAndHashCode
 public class Booking {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -36,4 +37,5 @@ public class Booking {
     @Enumerated(EnumType.STRING)
     @Column(length = 10)
     private BookingStatus status;
+
 }
