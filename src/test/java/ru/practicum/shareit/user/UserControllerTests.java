@@ -1,13 +1,14 @@
-package ru.practicum.shareit.repositorytests;
+package ru.practicum.shareit.user;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
-import ru.practicum.shareit.user.UserController;
+import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.user.dto.UserDto;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
@@ -36,6 +37,16 @@ class UserControllerTests {
                 .build();
         userController.update(userDto, 1L);
         assertEquals(userDto.getEmail(), userController.getById(1L).getEmail());
+    }
+
+    @Test
+    void updateFailUserIdTest() {
+        userController.create(user);
+        UserDto userDto = user.builder()
+                .id(1L)
+                .email("update@email.com")
+                .build();
+        assertThrows(NotFoundException.class, () -> userController.update(userDto, 2L));
     }
 
     @Test

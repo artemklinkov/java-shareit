@@ -3,8 +3,6 @@ package ru.practicum.shareit.user.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.practicum.shareit.exception.BadDataException;
-import ru.practicum.shareit.exception.ConflictDataException;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.model.User;
@@ -68,16 +66,4 @@ public class UserServiceImpl implements UserService {
         userRepository.deleteById(id);
     }
 
-    void checkEmail(User user, boolean isUpdate) {
-        if (!isUpdate && user.getEmail() == null) {
-            throw new BadDataException("Не указан email пользователя");
-        }
-        List<User> users = userRepository.findAll();
-        users.forEach(checkedUser -> {
-            if (checkedUser.getEmail().equals(user.getEmail())) {
-                throw new ConflictDataException(
-                        String.format("Пользователь с e-mail %s уже зарегистрирован", user.getEmail()));
-            }
-        });
-    }
 }
