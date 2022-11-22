@@ -1,10 +1,11 @@
 package ru.practicum.shareit.item.service;
 
+import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.repository.BookingRepository;
 import ru.practicum.shareit.exception.BadDataException;
 import ru.practicum.shareit.exception.NotFoundException;
@@ -35,6 +36,7 @@ import static ru.practicum.shareit.item.mapper.ItemMapper.toItem;
 import static ru.practicum.shareit.item.mapper.ItemMapper.toItemDto;
 
 @Service
+@RequiredArgsConstructor
 public class ItemServiceImpl implements ItemService {
 
     private final ItemRepository itemRepository;
@@ -45,19 +47,6 @@ public class ItemServiceImpl implements ItemService {
     private final BookingRepository bookingRepository;
 
     private final ItemRequestRepository itemRequestRepository;
-
-    @Autowired
-    public ItemServiceImpl(ItemRepository itemRepository,
-                           UserRepository userRepository,
-                           CommentRepository commentRepository,
-                           BookingRepository bookingRepository,
-                           ItemRequestRepository itemRequestRepository) {
-        this.itemRepository = itemRepository;
-        this.userRepository = userRepository;
-        this.commentRepository = commentRepository;
-        this.bookingRepository = bookingRepository;
-        this.itemRequestRepository = itemRequestRepository;
-    }
 
     @Transactional
     @Override
@@ -167,8 +156,9 @@ public class ItemServiceImpl implements ItemService {
     }
 
     private void setFieldsToItemDto(ItemDto itemDto) {
-        itemDto.setLastBooking(bookingRepository.findAllByItemIdOrderByStartAsc(itemDto.getId()).isEmpty() ?
-                null : toBookingShortDto(bookingRepository.findAllByItemIdOrderByStartAsc(itemDto.getId()).get(0)));
+        List<Booking> allByItemIdOrderByStartAsc = bookingRepository.findAllByItemIdOrderByStartAsc(itemDto.getId());
+        itemDto.setLastBooking(allByItemIdOrderByStartAsc.isEmpty() ?
+                null : toBookingShortDto(allByItemIdOrderByStartAsc.get(0)));
         itemDto.setNextBooking(itemDto.getLastBooking() == null ?
                 null : toBookingShortDto(bookingRepository.findAllByItemIdOrderByStartDesc(itemDto.getId()).get(0)));
         itemDto.setComments(commentRepository.findAllByItemId(itemDto.getId())

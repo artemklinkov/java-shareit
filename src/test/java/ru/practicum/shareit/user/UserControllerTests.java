@@ -46,7 +46,9 @@ class UserControllerTests {
                 .id(1L)
                 .email("update@email.com")
                 .build();
-        assertThrows(NotFoundException.class, () -> userController.update(userDto, 2L));
+        NotFoundException thrown = assertThrows(NotFoundException.class, () -> userController.update(userDto, 2L));
+        assertEquals("Невозможно обновить данные пользователя. Не найден пользователь с id: 2",
+                thrown.getMessage());
     }
 
     @Test

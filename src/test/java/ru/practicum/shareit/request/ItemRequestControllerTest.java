@@ -40,7 +40,9 @@ public class ItemRequestControllerTest {
 
     @Test
     void createWithWrongUserTest() {
-        assertThrows(NotFoundException.class, () -> itemRequestController.create(itemRequestDto, 1L));
+        NotFoundException thrown = assertThrows(NotFoundException.class,
+                () -> itemRequestController.create(itemRequestDto, 1L));
+        assertEquals("Невозможно создать запрос - не найден пользователь с id 1", thrown.getMessage());
     }
 
     @Test
@@ -52,7 +54,10 @@ public class ItemRequestControllerTest {
 
     @Test
     void getAllByUserWithWrongUserTest() {
-        assertThrows(NotFoundException.class, () -> itemRequestController.getAllByUser(1L));
+        NotFoundException thrown = assertThrows(NotFoundException.class,
+                () -> itemRequestController.getAllByUser(1L));
+        assertEquals("Невозможно найти запросы пользователя - не найден пользователь с id 1",
+                thrown.getMessage());
     }
 
     @Test
@@ -66,11 +71,19 @@ public class ItemRequestControllerTest {
 
     @Test
     void getAllByWrongUser() {
-        assertThrows(NotFoundException.class, () -> itemRequestController.getAll(0, 10, 1L));
+        NotFoundException thrown = assertThrows(NotFoundException.class,
+                () -> itemRequestController.getAll(0, 10, 1L));
+        assertEquals("Невозможно найти запросы - не найден пользователь с id 1",
+                thrown.getMessage());
     }
 
     @Test
     void getAllWithWrongFrom() {
-        assertThrows(BadDataException.class, () -> itemRequestController.getAll(-1, 10, 1L));
+        BadDataException thrown = assertThrows(BadDataException.class,
+                () -> itemRequestController.getAll(-1, 10, 1L));
+        assertEquals("Невозможно найти запросы - неккоректно переданы параметры поиска " +
+                        "- индекс первого элемента не может быть меньше нуля, " +
+                        "а размер страницы должен быть больше нуля",
+                thrown.getMessage());
     }
 }
