@@ -71,6 +71,13 @@ class ItemControllerTests {
     }
 
     @Test
+    void searchEmptyTest() {
+        userController.create(userDto);
+        itemController.create(itemDto, 1L);
+        assertEquals(0, itemController.search("", 0, 1).size());
+    }
+
+    @Test
     void createCommentTest() {
         CommentDto comment = CommentDto.builder().text("first comment").build();
         UserDto user = userController.create(userDto);

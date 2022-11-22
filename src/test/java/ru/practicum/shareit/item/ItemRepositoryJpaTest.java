@@ -42,4 +42,5 @@ public class ItemRepositoryJpaTest {
         Item foundItem = query.setParameter("searchStr", "desc").getSingleResult();
         assertThat(items.stream().collect(Collectors.toList()).get(0), equalTo(foundItem));
     }
+
 }

@@ -6,11 +6,15 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingShortDto;
+import ru.practicum.shareit.booking.mapper.BookingMapper;
+import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.exception.BadDataException;
 import ru.practicum.shareit.item.ItemController;
 import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.mapper.ItemMapper;
 import ru.practicum.shareit.user.UserController;
 import ru.practicum.shareit.user.dto.UserDto;
+import ru.practicum.shareit.user.mapper.UserMapper;
 
 import java.time.LocalDateTime;
 
@@ -100,6 +104,13 @@ class BookingControllerTests {
     }
 
     @Test
+    void getAllByOwnerFailIncorrectParametersTest() {
+        UserDto user = userController.create(userDto);
+        assertThrows(BadDataException.class, () -> bookingController.getAllByOwner(user.getId(),
+                "UNKNOWN", -1, 0));
+    }
+
+    @Test
     void getAllByOwnerFailTest() {
         UserDto user = userController.create(userDto);
         assertThrows(BadDataException.class, () -> bookingController.getAllByOwner(user.getId(),
@@ -111,5 +122,25 @@ class BookingControllerTests {
         UserDto user = userController.create(userDto);
         assertThrows(BadDataException.class, () -> bookingController.getAllByUser(user.getId(),
                 "UNKNOWN", 0, 1));
+    }
+
+    @Test
+    void toBookingTest() {
+        UserDto user = userController.create(userDto);
+        ItemDto item = itemController.create(itemDto, user.getId());
+        UserDto user1 = userController.create(userDto1);
+        BookingDto bookingDto = bookingController.create(BookingShortDto.builder()
+                .start(LocalDateTime.of(2022, 10, 24, 12, 30))
+                .end(LocalDateTime.of(2022, 11, 10, 13, 0))
+                .itemId(item.getId()).build(), user1.getId());
+        Booking booking = Booking.builder()
+                .id(1L)
+                .start(LocalDateTime.of(2022, 10, 24, 12, 30))
+                .end(LocalDateTime.of(2022, 11, 10, 13, 0))
+                .item(ItemMapper.toItem(item))
+                .booker(UserMapper.toUser(user1))
+                .status(WAITING)
+                .build();
+        assertEquals(booking, BookingMapper.toBooking(bookingDto));
     }
 }
