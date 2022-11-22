@@ -106,27 +106,22 @@ class BookingControllerTests {
     @Test
     void getAllByOwnerFailIncorrectParametersTest() {
         UserDto user = userController.create(userDto);
-        BadDataException thrown = assertThrows(BadDataException.class, () -> bookingController.getAllByOwner(user.getId(),
+        assertThrows(BadDataException.class, () -> bookingController.getAllByOwner(user.getId(),
                 "UNKNOWN", -1, 0));
-        assertEquals("Невозможно найти бронирования - " +
-                "неккоректно переданы параметры поиска - индекс первого элемента не может быть меньше нуля, " +
-                "а размер страницы должен быть больше нуля", thrown.getMessage());
     }
 
     @Test
     void getAllByOwnerFailTest() {
         UserDto user = userController.create(userDto);
-        BadDataException thrown = assertThrows(BadDataException.class, () -> bookingController.getAllByOwner(user.getId(),
+        assertThrows(BadDataException.class, () -> bookingController.getAllByOwner(user.getId(),
                 "UNKNOWN", 0, 1));
-        assertEquals("Unknown state: UNSUPPORTED_STATUS", thrown.getMessage());
     }
 
     @Test
     void getAllByUserFailTest() {
         UserDto user = userController.create(userDto);
-        BadDataException thrown = assertThrows(BadDataException.class, () -> bookingController.getAllByUser(user.getId(),
+        assertThrows(BadDataException.class, () -> bookingController.getAllByUser(user.getId(),
                 "UNKNOWN", 0, 1));
-        assertEquals("Unknown state: UNSUPPORTED_STATUS", thrown.getMessage());
     }
 
     @Test
