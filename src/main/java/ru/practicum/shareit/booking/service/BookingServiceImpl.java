@@ -104,7 +104,7 @@ public class BookingServiceImpl implements BookingService {
                 .orElseThrow(() -> new NotFoundException("Невозможно найти бронирования - " +
                         "не существует пользователя с id " + userId));
         List<Booking> bookingDtoList = new ArrayList<>();
-        PageRequest pageRequest = PageRequest.of(from, size, sort);
+        PageRequest pageRequest = PageRequest.of(from / size, size, sort);
         BookingState evaluateState;
         try {
             evaluateState = BookingState.valueOf(state);
@@ -148,7 +148,7 @@ public class BookingServiceImpl implements BookingService {
                 .orElseThrow(() -> new NotFoundException("Невозможно найти бронирования - " +
                         "не найден пользователь с id " + userId));
         List<Booking> bookingDtoList = new ArrayList<>();
-        PageRequest pageRequest = PageRequest.of(from, size, sort);
+        PageRequest pageRequest = PageRequest.of(from / size, size, sort);
         BookingState evaluateState;
         try {
             evaluateState = BookingState.valueOf(state);
