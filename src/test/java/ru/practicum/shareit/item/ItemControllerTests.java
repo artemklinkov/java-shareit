@@ -1,4 +1,4 @@
-package ru.practicum.shareit.repositorytests;
+package ru.practicum.shareit.item;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -6,7 +6,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import ru.practicum.shareit.booking.BookingController;
 import ru.practicum.shareit.booking.dto.BookingShortDto;
-import ru.practicum.shareit.item.ItemController;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.user.UserController;
@@ -59,16 +58,16 @@ class ItemControllerTests {
     void deleteTest() {
         userController.create(userDto);
         itemController.create(itemDto, 1L);
-        assertEquals(1, itemController.getAll(1L).size());
+        assertEquals(1, itemController.getAll(1L, 0, 1).size());
         itemController.delete(1L);
-        assertEquals(0, itemController.getAll(1L).size());
+        assertEquals(0, itemController.getAll(1L, 0, 1).size());
     }
 
     @Test
     void searchTest() {
         userController.create(userDto);
         itemController.create(itemDto, 1L);
-        assertEquals(1, itemController.search("Desc").size());
+        assertEquals(1, itemController.search("Desc", 0, 1).size());
     }
 
     @Test

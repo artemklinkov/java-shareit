@@ -1,10 +1,9 @@
-package ru.practicum.shareit.repositorytests;
+package ru.practicum.shareit.booking;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
-import ru.practicum.shareit.booking.BookingController;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingShortDto;
 import ru.practicum.shareit.item.ItemController;
@@ -46,6 +45,11 @@ class BookingControllerTests {
             .email("user1@email.com")
             .build();
 
+    private BookingShortDto bookingShortDto = BookingShortDto.builder()
+            .start(LocalDateTime.of(2022, 10, 24, 12, 30))
+            .end(LocalDateTime.of(2023, 11, 10, 13, 0))
+            .itemId(1L).build();
+
     @Test
     void createTest() {
         UserDto user = userController.create(userDto);
@@ -77,12 +81,19 @@ class BookingControllerTests {
         UserDto user = userController.create(userDto);
         ItemDto item = itemController.create(itemDto, user.getId());
         UserDto user1 = userController.create(userDto1);
-        BookingDto booking = bookingController.create(BookingShortDto.builder()
-                .start(LocalDateTime.of(2022, 10, 24, 12, 30))
-                .end(LocalDateTime.of(2022, 11, 10, 13, 0))
-                .itemId(item.getId()).build(), user1.getId());
-        assertEquals(1, bookingController.getAllByUser(user1.getId(), "WAITING").size());
+        BookingDto booking = bookingController.create(bookingShortDto, user1.getId());
+        assertEquals(1, bookingController.getAllByUser(user1.getId(), "WAITING", 0, 10).size());
+        assertEquals(1, bookingController.getAllByUser(user1.getId(), "ALL", 0, 10).size());
+        assertEquals(0, bookingController.getAllByUser(user1.getId(), "PAST", 0, 10).size());
+        assertEquals(1, bookingController.getAllByUser(user1.getId(), "CURRENT", 0, 10).size());
+        assertEquals(0, bookingController.getAllByUser(user1.getId(), "FUTURE", 0, 10).size());
+        assertEquals(0, bookingController.getAllByUser(user1.getId(), "REJECTED", 0, 10).size());
         bookingController.approve(booking.getId(), user.getId(), true);
-        assertEquals(1, bookingController.getAllByOwner(user.getId(), "CURRENT").size());
+        assertEquals(1, bookingController.getAllByOwner(user.getId(), "CURRENT", 0, 10).size());
+        assertEquals(1, bookingController.getAllByOwner(user.getId(), "ALL", 0, 10).size());
+        assertEquals(0, bookingController.getAllByOwner(user.getId(), "WAITING", 0, 10).size());
+        assertEquals(0, bookingController.getAllByOwner(user.getId(), "FUTURE", 0, 10).size());
+        assertEquals(0, bookingController.getAllByOwner(user.getId(), "REJECTED", 0, 10).size());
+        assertEquals(0, bookingController.getAllByOwner(user.getId(), "PAST", 0, 10).size());
     }
 }

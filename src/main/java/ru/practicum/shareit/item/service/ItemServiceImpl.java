@@ -2,6 +2,7 @@ package ru.practicum.shareit.item.service;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.repository.BookingRepository;
@@ -15,6 +16,8 @@ import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.CommentRepository;
 import ru.practicum.shareit.item.repository.ItemRepository;
+import ru.practicum.shareit.request.model.ItemRequest;
+import ru.practicum.shareit.request.repository.ItemRequestRepository;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 
@@ -41,15 +44,19 @@ public class ItemServiceImpl implements ItemService {
 
     private final BookingRepository bookingRepository;
 
+    private final ItemRequestRepository itemRequestRepository;
+
     @Autowired
     public ItemServiceImpl(ItemRepository itemRepository,
                            UserRepository userRepository,
                            CommentRepository commentRepository,
-                           BookingRepository bookingRepository) {
+                           BookingRepository bookingRepository,
+                           ItemRequestRepository itemRequestRepository) {
         this.itemRepository = itemRepository;
         this.userRepository = userRepository;
         this.commentRepository = commentRepository;
         this.bookingRepository = bookingRepository;
+        this.itemRequestRepository = itemRequestRepository;
     }
 
     @Transactional
@@ -60,6 +67,12 @@ public class ItemServiceImpl implements ItemService {
                         "не найден пользователь с id: " + userId));
         Item item = toItem(itemDto);
         item.setOwner(user);
+        if (itemDto.getRequestId() != null) {
+            ItemRequest itemRequest = itemRequestRepository.findById(itemDto.getRequestId())
+                    .orElseThrow(() -> new NotFoundException("Невозможно создать вещь - " +
+                            "не найден запрос с id: " + itemDto.getRequestId()));
+            item.setRequest(itemRequest);
+        }
         itemRepository.save(item);
 
         return toItemDto(item);
@@ -88,17 +101,12 @@ public class ItemServiceImpl implements ItemService {
 
     @Transactional(readOnly = true)
     @Override
-    public List<ItemDto> getAll(Long userId) {
-        List<Item> items = itemRepository.findAllByOwnerId(userId);
-        List<ItemDto> itemDtoList = items.stream().map(ItemMapper::toItemDto).collect(Collectors.toList());
-        itemDtoList.forEach(itemDto -> {
-            itemDto.setLastBooking(bookingRepository.findAllByItemIdOrderByStartAsc(itemDto.getId()).isEmpty() ?
-                    null : toBookingShortDto(bookingRepository.findAllByItemIdOrderByStartAsc(itemDto.getId()).get(0)));
-            itemDto.setNextBooking(itemDto.getLastBooking() == null ?
-                    null : toBookingShortDto(bookingRepository.findAllByItemIdOrderByStartDesc(itemDto.getId()).get(0)));
-            itemDto.setComments(commentRepository.findAllByItemId(itemDto.getId())
-                    .stream().map(CommentMapper::toCommentDto).collect(Collectors.toList()));
-        });
+    public List<ItemDto> getAll(Long userId, int from, int size) {
+        List<ItemDto> itemDtoList = itemRepository.findAllByOwnerId(userId, PageRequest.of(from, size))
+                .stream()
+                .map(ItemMapper::toItemDto)
+                .collect(Collectors.toList());
+        itemDtoList.forEach(this::setFieldsToItemDto);
 
         return itemDtoList;
     }
@@ -124,15 +132,14 @@ public class ItemServiceImpl implements ItemService {
 
     @Transactional(readOnly = true)
     @Override
-    public List<ItemDto> search(String text) {
+    public List<ItemDto> search(String text, int from, int size) {
         if (StringUtils.isBlank(text)) {
             return new ArrayList<>();
         }
 
-        return itemRepository.findAll()
+        return itemRepository.search(text, PageRequest.of(from, size))
                 .stream()
-                .filter(item -> item.getAvailable() && item.getDescription().toLowerCase().contains(text.toLowerCase()))
-                .map(item -> toItemDto(item))
+                .map(ItemMapper::toItemDto)
                 .collect(Collectors.toList());
     }
 
@@ -157,5 +164,16 @@ public class ItemServiceImpl implements ItemService {
         commentRepository.save(comment);
 
         return toCommentDto(comment);
+    }
+
+    private void setFieldsToItemDto(ItemDto itemDto) {
+        itemDto.setLastBooking(bookingRepository.findAllByItemIdOrderByStartAsc(itemDto.getId()).isEmpty() ?
+                null : toBookingShortDto(bookingRepository.findAllByItemIdOrderByStartAsc(itemDto.getId()).get(0)));
+        itemDto.setNextBooking(itemDto.getLastBooking() == null ?
+                null : toBookingShortDto(bookingRepository.findAllByItemIdOrderByStartDesc(itemDto.getId()).get(0)));
+        itemDto.setComments(commentRepository.findAllByItemId(itemDto.getId())
+                .stream()
+                .map(CommentMapper::toCommentDto)
+                .collect(Collectors.toList()));
     }
 }
